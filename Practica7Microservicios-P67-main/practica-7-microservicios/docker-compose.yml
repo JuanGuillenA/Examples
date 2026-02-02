@@ -1,0 +1,71 @@
+version: "3.9"
+services:
+  gateway-api:
+    build: ./gateway-api
+    container_name: gateway-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ms-productos
+      - ms-envios
+      - ms-ordenes
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  ms-envios:
+    build: ./ms-envios
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  db-productos:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: productos_db
+      POSTGRES_USER: productos_user
+      POSTGRES_PASSWORD: productos_pass
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  ms-productos:
+    build: ./ms-productos
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db-productos
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+  
+  db-ordenes:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ordenes_db
+      POSTGRES_USER: ordenes_user
+      POSTGRES_PASSWORD: ordenes_pass
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  ms-ordenes:
+    build: ./ms-ordenes
+    ports:
+      - "8083:8083"
+    depends_on:
+      - db-ordenes
+      - ms-envios
+      - ms-productos
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+
+      
+networks:
+  red-microservicios:
+    name: red-microservicios
+    driver: bridge
