@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: ms-productos
+  name: ms-productos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ms-productos
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: ms-productos
+    spec:
+      containers:
+        - env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: productos_pass
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://db-productos:5432/productos_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: productos_user
+            - name: SPRING_JPA_DATABASE_PLATFORM
+              value: org.hibernate.dialect.PostgreSQLDialect
+          image: juanguillena/ms-productos:latest
+          name: ms-productos
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+      restartPolicy: Always

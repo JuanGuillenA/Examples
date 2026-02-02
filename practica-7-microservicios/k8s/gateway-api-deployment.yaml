@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: gateway-api
+  name: gateway-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: gateway-api
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: gateway-api
+    spec:
+      containers:
+        - env:
+            - name: MS_ENVIOS_URL
+              value: http://ms-envios:8082
+            - name: MS_ORDENES_URL
+              value: http://ms-ordenes:8083
+            - name: MS_PRODUCTOS_URL
+              value: http://ms-productos:8081
+          image: juanguillena/gateway-api:latest
+          name: gateway-api
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always

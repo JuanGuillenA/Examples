@@ -1,0 +1,84 @@
+version: "3.9"
+services:
+  gateway-api:
+    image: juanguillena/gateway-api:latest
+    container_name: gateway-api
+    ports:
+      - "8080:8080"
+    environment:
+      # Ejemplo (ajusta a lo que use tu gateway):
+      MS_PRODUCTOS_URL: http://ms-productos:8081
+      MS_ENVIOS_URL: http://ms-envios:8082
+      MS_ORDENES_URL: http://ms-ordenes:8083
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  ms-envios:
+    image: juanguillena/ms-envios:latest
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  db-productos:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: productos_db
+      POSTGRES_USER: productos_user
+      POSTGRES_PASSWORD: productos_pass
+    expose:
+      - "5432"
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  ms-productos:
+    image: juanguillena/ms-productos:latest
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-productos:5432/productos_db
+      SPRING_DATASOURCE_USERNAME: productos_user
+      SPRING_DATASOURCE_PASSWORD: productos_pass
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+  
+  db-ordenes:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ordenes_db
+      POSTGRES_USER: ordenes_user
+      POSTGRES_PASSWORD: ordenes_pass
+    expose:
+      - "5432"
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+  ms-ordenes:
+    image: juanguillena/ms-ordenes:latest
+    ports:
+      - "8083:8083"
+    environment:
+      DB_HOST: db-ordenes
+      DB_PORT: "5432"
+      DB_NAME: ordenes_db
+      DB_USER: ordenes_user
+      DB_PASSWORD: ordenes_pass
+      # si ms-ordenes consume a envios/productos:
+      MS_ENVIOS_URL: http://ms-envios:8082
+      MS_PRODUCTOS_URL: http://ms-productos:8081
+    restart: unless-stopped
+    networks:
+      - red-microservicios
+
+
+      
+networks:
+  red-microservicios:
+    name: red-microservicios
+    driver: bridge

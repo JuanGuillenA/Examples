@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: ms-envios
+  name: ms-envios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ms-envios
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: ms-envios
+    spec:
+      containers:
+        - image: juanguillena/ms-envios:latest
+          name: ms-envios
+          ports:
+            - containerPort: 8082
+              protocol: TCP
+      restartPolicy: Always

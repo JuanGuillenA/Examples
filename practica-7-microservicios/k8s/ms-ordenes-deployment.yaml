@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: ms-ordenes
+  name: ms-ordenes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ms-ordenes
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: ms-ordenes
+    spec:
+      containers:
+        - env:
+            - name: DB_HOST
+              value: db-ordenes
+            - name: DB_NAME
+              value: ordenes_db
+            - name: DB_PASSWORD
+              value: ordenes_pass
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: ordenes_user
+            - name: MS_ENVIOS_URL
+              value: http://ms-envios:8082
+            - name: MS_PRODUCTOS_URL
+              value: http://ms-productos:8081
+          image: juanguillena/ms-ordenes:latest
+          name: ms-ordenes
+          ports:
+            - containerPort: 8083
+              protocol: TCP
+      restartPolicy: Always
